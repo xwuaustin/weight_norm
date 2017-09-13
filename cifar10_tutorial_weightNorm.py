@@ -1,10 +1,13 @@
+
+########################################################################
+""" This code is originally from cifar10_tutorial in pytorch.
+There is slightly change at line 68-74 where I implement the weight-normlization"""
+########################################################################
+
 import torch
 import torchvision
 import torchvision.transforms as transforms
 
-########################################################################
-# The output of torchvision datasets are PILImage images of range [0, 1].
-# We transform them to Tensors of normalized range [-1, 1]
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -23,8 +26,7 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=4,
 classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-########################################################################
-# Let us show some of the training images, for fun.
+
 
 import matplotlib.pyplot as plt
 import numpy as np
