@@ -62,27 +62,31 @@ import torch.nn.utils.weight_norm as weightNorm
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        ### we use weight normalization after each convolutions and linear transfrom
-        self.conv1 = weightNorm(nn.Conv2d(3, 6, 5),name = "weight")
-        #print (self.conv1._parameters.keys())
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.conv1_bn = nn.BatchNorm2d(6)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 =weightNorm(nn.Conv2d(6, 16, 5),name = "weight")
-        self.fc1 = weightNorm(nn.Linear(16 * 5 * 5, 120),name = "weight")
-        self.fc2 = weightNorm(nn.Linear(120, 84),name = "weight")
-        self.fc3 = weightNorm(nn.Linear(84, 10),name = "weight")
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.conv2_bn = nn.BatchNorm2d(16)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc1_bn = nn.BatchNorm1d(120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc2_bn = nn.BatchNorm1d(84)
+        self.fc3 = nn.Linear(84, 10)
+        #self.fc3_bn = nn.BatchNorm1d(10)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(F.relu(self.conv1_bn(self.conv1(x))))
+        x = self.pool(F.relu(self.conv2_bn(self.conv2(x))))
         x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc1_bn(self.fc1(x)))
+        x = F.relu(self.fc2_bn(self.fc2(x)))
         x = self.fc3(x)
         return x
 
 
+
 net = Net()
-print "weight normalization"
+print "Batch normalization"
 ########################################################################
 # 3. Define a Loss function and optimizer
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

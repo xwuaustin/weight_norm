@@ -1,3 +1,60 @@
+# -*- coding: utf-8 -*-
+"""
+Training a classifier
+=====================
+
+This is it. You have seen how to define neural networks, compute loss and make
+updates to the weights of the network.
+
+Now you might be thinking,
+
+What about data?
+----------------
+
+Generally, when you have to deal with image, text, audio or video data,
+you can use standard python packages that load data into a numpy array.
+Then you can convert this array into a ``torch.*Tensor``.
+
+-  For images, packages such as Pillow, OpenCV are useful.
+-  For audio, packages such as scipy and librosa
+-  For text, either raw Python or Cython based loading, or NLTK and
+   SpaCy are useful.
+
+Specifically for ``vision``, we have created a package called
+``torchvision``, that has data loaders for common datasets such as
+Imagenet, CIFAR10, MNIST, etc. and data transformers for images, viz.,
+``torchvision.datasets`` and ``torch.utils.data.DataLoader``.
+
+This provides a huge convenience and avoids writing boilerplate code.
+
+For this tutorial, we will use the CIFAR10 dataset.
+It has the classes: ‘airplane’, ‘automobile’, ‘bird’, ‘cat’, ‘deer’,
+‘dog’, ‘frog’, ‘horse’, ‘ship’, ‘truck’. The images in CIFAR-10 are of
+size 3x32x32, i.e. 3-channel color images of 32x32 pixels in size.
+
+.. figure:: /_static/img/cifar10.png
+   :alt: cifar10
+
+   cifar10
+
+
+Training an image classifier
+----------------------------
+
+We will do the following steps in order:
+
+1. Load and normalizing the CIFAR10 training and test datasets using
+   ``torchvision``
+2. Define a Convolution Neural Network
+3. Define a loss function
+4. Train the network on the training data
+5. Test the network on the test data
+
+1. Loading and normalizing CIFAR10
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using ``torchvision``, it’s extremely easy to load CIFAR10.
+"""
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -57,19 +114,17 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.nn.utils.weight_norm as weightNorm
+
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        ### we use weight normalization after each convolutions and linear transfrom
-        self.conv1 = weightNorm(nn.Conv2d(3, 6, 5),name = "weight")
-        #print (self.conv1._parameters.keys())
+        self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 =weightNorm(nn.Conv2d(6, 16, 5),name = "weight")
-        self.fc1 = weightNorm(nn.Linear(16 * 5 * 5, 120),name = "weight")
-        self.fc2 = weightNorm(nn.Linear(120, 84),name = "weight")
-        self.fc3 = weightNorm(nn.Linear(84, 10),name = "weight")
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -82,7 +137,7 @@ class Net(nn.Module):
 
 
 net = Net()
-print "weight normalization"
+
 ########################################################################
 # 3. Define a Loss function and optimizer
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -206,3 +261,58 @@ for i in range(10):
     print('Accuracy of %5s : %2d %%' % (
         classes[i], 100 * class_correct[i] / class_total[i]))
 
+########################################################################
+# Okay, so what next?
+#
+# How do we run these neural networks on the GPU?
+#
+# Training on GPU
+# ----------------
+# Just like how you transfer a Tensor on to the GPU, you transfer the neural
+# net onto the GPU.
+# This will recursively go over all modules and convert their parameters and
+# buffers to CUDA tensors:
+#
+# .. code:: python
+#
+#     net.cuda()
+#
+#
+# Remember that you will have to send the inputs and targets at every step
+# to the GPU too:
+#
+# ::
+#
+#         inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
+#
+# Why dont I notice MASSIVE speedup compared to CPU? Because your network
+# is realllly small.
+#
+# **Exercise:** Try increasing the width of your network (argument 2 of
+# the first ``nn.Conv2d``, and argument 1 of the second ``nn.Conv2d`` –
+# they need to be the same number), see what kind of speedup you get.
+#
+# **Goals achieved**:
+#
+# - Understanding PyTorch's Tensor library and neural networks at a high level.
+# - Train a small neural network to classify images
+#
+# Where do I go next?
+# -------------------
+#
+# -  :doc:`Train neural nets to play video games </intermediate/reinforcement_q_learning>`
+# -  `Train a state-of-the-art ResNet network on imagenet`_
+# -  `Train an face generator using Generative Adversarial Networks`_
+# -  `Train a word-level language model using Recurrent LSTM networks`_
+# -  `More examples`_
+# -  `More tutorials`_
+# -  `Discuss PyTorch on the Forums`_
+# -  `Chat with other users on Slack`_
+#
+# .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
+# .. _Train an face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
+# .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
+# .. _More examples: https://github.com/pytorch/examples
+# .. _More tutorials: https://github.com/pytorch/tutorials
+# .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
+# .. _Chat with other users on Slack: http://pytorch.slack.com/messages/beginner/
